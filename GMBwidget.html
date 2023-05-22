@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Widget</title>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+
+<body>
+    <div>
+        <h2>Umair Athar</h2>
+    </div>
+
+    <script>
+
+gcloud functions deploy nodejs-http-function --gen2 --runtime=nodejs18 --region=us-central1 --source=. --entry-point=helloGet --trigger-http --allow-unauthenticated
+
+        const cors = require("cors")({ origin: true });
+
+        exports.myFunction = (req, res) => {
+            cors(req, res, () => {
+                // handle CORS request here
+                const apiKey = "AIzaSyCQuZZilihJxD5VHjkr48uTtqE2wJ7GBY8";
+                const placeId = "ChIJK2s9IonL3IARo5lFmirWfzM";
+
+                const url = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=name,rating,reviews`;
+
+
+
+    </script>
+
+    <div class="reviews-widget">
+        <div class="g-review-badges" data-ga-context="review_badges">
+            <div class="g-review-badge" data-review-source="Google"
+                data-place-id="AIzaSyChvOai0gd1K4xX1rOtEu34YKD8hA5Dtz0"></div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

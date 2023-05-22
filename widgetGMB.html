@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google Reviews Widget</title>
+    <style>
+        /* Widget styles */
+        #reviews-container {
+            width: auto;
+            height: 700px;
+            margin: auto;
+        }
+
+        .widget {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 400px;
+            height: 100%;
+        }
+
+        .review {
+            margin-bottom: 10px;
+        }
+
+        .reviewer-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .review-date {
+            font-style: italic;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+
+        .review-rating {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .review-text {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="widget">
+        <h2>Google Reviews Widget</h2>
+        <div id="reviews-container"></div>
+    </div>
+    <!-- api key AIzaSyChvOai0gd1K4xX1rOtEu34YKD8hA5Dtz0 -->
+    <!-- The place ID for the Real Estate Eastvale location you provided is "ChIJQ-XdtbYw3IAR1AF4pRpN4a4". -->
+    <script>
+
+        const apiKey = 'AIzaSyD_2jHYiopQeHDfFmom6oVCukJTIL_oh4k';
+        const placeId = 'ChIJK2s9IonL3IARo5lFmirWfzM';
+
+        const proxyUrl = 'http://localhost:8080/'; // Replace with your actual proxy server URL
+        const minTime = 'timestamp-of-min-time'; // Replace with the desired minimum timestamp
+        const maxTime = 'timestamp-of-max-time'; // Replace with the desired maximum timestamp
+        const targetUrl = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=name,rating,reviews&min_time=${minTime}&max_time=${maxTime}`;
+
+
+        let reviews = []
+
+        function fetchReviews(url) {
+            fetch(proxyUrl + url, {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    console.log("pass hva 1st time");
+                    
+                    reviews.push(data.result.reviews)
+                    // Iterate over the reviews and add them to the widget
+                    console.log(review);
+                    const reviewsContainer = document.getElementById('reviews-container');
+                    for (const review of reviews) {
+                        const reviewElem = document.createElement('div');
+                        reviewElem.classList.add('review');
+
+                        const ratingElem = document.createElement('span');
+                        ratingElem.classList.add('review-rating');
+                        ratingElem.innerHTML = `${review.rating} &#9733;`;
+                        reviewElem.appendChild(ratingElem);
+
+                        const nameElem = document.createElement('span');
+                        nameElem.classList.add('reviewer-name');
+                        nameElem.textContent = review.author_name;
+                        reviewElem.appendChild(nameElem);
+
+                        const dateElem = document.createElement('span');
+                        dateElem.classList.add('review-date');
+                        const date = new Date(review.time * 1000);
+                        dateElem.textContent = date.toLocaleDateString();
+                        reviewElem.appendChild(dateElem);
+
+                        const textElem = document.createElement('div');
+                        textElem.classList.add('review-text');
+                        textElem.textContent = review.text;
+                        reviewElem.appendChild(textElem);
+                    }
+
+                    reviewsContainer.appendChild(reviewElem);
+                    console.log(reviewsContainer);
+
+                    if (data.result.reviews && data.result.reviews.length > 0) {
+                        // Process the reviews here
+                        console.log("enter hva");
+                        if (data.result.next_page_token) {
+                            console.log(" 2nd enter hva");
+                            // If there are more reviews, fetch the next page
+                            setTimeout(() => {
+                                const nextPageUrl = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=name,rating,reviews&pagetoken=${data.result.next_page_token}`;
+                                fetchReviews(nextPageUrl);
+                            }, 2000); // Delay the next request to avoid rate limits
+                        }
+                    }
+                    console.log("complete hva");
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+
+        const initialUrl = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=name,rating,reviews`;
+        fetchReviews(initialUrl);
+
+
+
+
+    </script>
+    <!-- <script>
+
+         // fetch(proxyUrl + targetUrl, {
+        //     method: 'GET',
+        //     mode: 'cors',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Access-Control-Allow-Origin': '*'
+        //     }
+        // })
+        //     .then(response => {
+        //         console.log(response.headers);
+        //         return response.json();
+        //     })
+        //     .then(data => {
+        //         console.log(data);
+        //     })
+        //     .catch(error => {
+        //         console.error(error);
+        //     });
+
+
+                    // const apiKey = "YOUR_API_KEY";
+        // const placeId = "PLACE_ID";
+
+        // gcloud functions deploy review-widget --runtime nodejs14 --trigger-http --allow-unauthenticated --set-env-vars API_KEY=AIzaSyCQuZZilihJxD5VHjkr48uTtqE2wJ7GBY8
+        // 1 deleted
+        // const placeId = 'ChIJQ-XdtbYw3IAR1AF4pRpN4a4';
+        // ChIJK2s9IonL3IARo5lFmirWfzM
+        // ChRSZWFsIEVzdGF0ZSBFYXN0dmFsZVoWIhRyZWFsIGVzdGF0ZSBlYXN0dmFsZZIBEnJlYWxfZXN0YXRlX2FnZW5jeeABAA
+
+        // https://goo.gl/maps/R87AhDKuq2PhyWMn9
+        // https://www.google.com/maps/place/Real+Estate+Eastvale/@33.9741911,-117.5785131,15z/data=!4m6!3m5!1s0x80dccb89223d6b2b:0x337fd62a9a4599a3!8m2!3d33.9741911!4d-117.5610036!16s%2Fg%2F11j8tmy72n
+        // 33.974565, -117.560918
+        // orangecountydesigners.com
+        // const apiKey = 'AIzaSyCQuZZilihJxD5VHjkr48uTtqE2wJ7GBY8';
+        // const apiKey = 'AIzaSyD3aMXU6tp7CtXwc8wemhvSkJkcCRIm9xE';
+        // key 4
+
+        // fetch(url)
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         // handle data here
+        //         console.log(data);
+        //     })
+        //     .catch(error => {
+        //         console.error(error);
+        //     });
+        
+        // const apiKey = 'AIzaSyChvOai0gd1K4xX1rOtEu34YKD8hA5Dtz0?';
+        // 2 active
+        // const apiKey = 'AIzaSyCQuZZilihJxD5VHjkr48uTtqE2wJ7GBY8';
+        // curl -X GET http://localhost:8000/https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyD_2jHYiopQeHDfFmom6oVCukJTIL_oh4k&placeid=ChIJK2s9IonL3IARo5lFmirWfzM&fields=name,rating,reviews
+
+
+        // const proxyUrl = `https://cors-anywhere.herokuapp.com/`; // Replace with your proxy server URL
+        // const proxyUrl = 'https://corsproxy.io/'; // Replace with your proxy server URL
+        // const targetUrl = 'http://example.com/api/endpoint'; // Replace with your target server URL
+
+       
+        // const fields = 'name,rating,reviews';
+
+        // const url = `${proxyUrl}/https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=${fields}`;
+
+        // fetch(url, {
+        //     method: 'GET',
+        //     mode: 'cors',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     }
+        // })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log(data);
+        //     })
+        //     .catch(error => {
+        //         console.error(error);
+        //     });
+
+
+
+        // key 2 no reffers
+        // const apiKey = 'AIzaSyCQuZZilihJxD5VHjkr48uTtqE2wJ7GBY8';
+        // key 3 https refer
+        // const apiKey = 'AIzaSyD3aMXU6tp7CtXwc8wemhvSkJkcCRIm9xE';
+        // key 4
+        // const apiKey = 'AIzaSyD_2jHYiopQeHDfFmom6oVCukJTIL_oh4k';
+        // const placeId = ' ChIJK2s9IonL3IARo5lFmirWfzM';
+        // const fields = 'name,rating,reviews';
+
+        // const url = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=${fields}`;
+
+        // fetch(url, {
+        //     method: 'GET',
+        //     mode: 'cors',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Access-Control-Allow-Origin': '*'
+        //     }
+        // })
+        //     .then(response => {
+        //     console.log(response.headers)
+        //     return response.json()
+        //     })
+        //     .then(data => {
+        //         console.log(data);
+        //     })
+        //     .catch(error => {
+        //         console.error(error);
+        //     });
+
+        // const axios = require('axios');
+        // Replace YOUR_API_KEY and YOUR_PLACE_ID with your own values
+        
+
+        
+        
+        // Google Maps API URL with the Place Details API endpoint and parameters
+                    //  https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=37.7749,-122.4194&radius=1500&type=restaurant&key=YOUR_API_KEY
+                //    const url =  `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=37.7749,-122.4194&radius=1500&type=restaurant&key=AIzaSyChvOai0gd1K4xX1rOtEu34YKD8hA5Dtz0`
+
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&placeid=${placeId}&fields=name,rating,reviews`;
+
+        // Fetch the place details JSON data
+
+
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log("sdsf");
+                console.log(data);
+                const reviews = data.result.reviews;
+
+                // Iterate over the reviews and add them to the widget
+                const reviewsContainer = document.getElementById('reviews-container');
+                for (const review of reviews) {
+                    const reviewElem = document.createElement('div');
+                    reviewElem.classList.add('review');
+
+                    const ratingElem = document.createElement('span');
+                    ratingElem.classList.add('review-rating');
+                    ratingElem.innerHTML = `${review.rating} &#9733;`;
+                    reviewElem.appendChild(ratingElem);
+
+                    const nameElem = document.createElement('span');
+                    nameElem.classList.add('reviewer-name');
+                    nameElem.textContent = review.author_name;
+                    reviewElem.appendChild(nameElem);
+
+                    const dateElem = document.createElement('span');
+                    dateElem.classList.add('review-date');
+                    const date = new Date(review.time * 1000);
+                    dateElem.textContent = date.toLocaleDateString();
+                    reviewElem.appendChild(dateElem);
+
+                    const textElem = document.createElement('div');
+                    textElem.classList.add('review-text');
+                    textElem.textContent = review.text;
+                    reviewElem.appendChild(textElem);
+
+                    reviewsContainer.appendChild(reviewElem);
+                }
+            })
+            .catch(error => console.error(error));
+
+
+
+//         corsAnywhere.request(url, function (response) {
+//     const data = JSON.parse(response);
+// console.log(data);
+//     // Do something with the data
+//   });
+
+        axios.get(url)
+    .then(response => {
+        console.log(response);
+      const reviews = response.data.result.reviews;
+
+      // Iterate over the reviews and add them to the widget
+      const reviewsContainer = document.getElementById('reviews-container');
+      for (const review of reviews) {
+        const reviewElem = document.createElement('div');
+        reviewElem.classList.add('review');
+
+        const ratingElem = document.createElement('span');
+        ratingElem.classList.add('review-rating');
+        ratingElem.innerHTML = `${review.rating} &#9733;`;
+        reviewElem.appendChild(ratingElem);
+
+        const nameElem = document.createElement('span');
+        nameElem.classList.add('reviewer-name');
+        nameElem.textContent = review.author_name;
+        reviewElem.appendChild(nameElem);
+
+        const dateElem = document.createElement('span');
+        dateElem.classList.add('review-date');
+        const date = new Date(review.time * 1000);
+        dateElem.textContent = date.toLocaleDateString();
+        reviewElem.appendChild(dateElem);
+
+        const textElem = document.createElement('div');
+        textElem.classList.add('review-text');
+        textElem.textContent = review.text;
+        reviewElem.appendChild(textElem);
+
+        reviewsContainer.appendChild(reviewElem);
+      }
+    })
+    .catch(error => {
+        console.log(error);
+      console.error(error);
+    });
+
+       
+        // async function fetchReviews() {
+        //     try {
+        //         const response = await axios.get(url);
+        //         console.log(response);
+        //         const reviews = response.data.result.reviews;
+
+        //         const reviewsContainer = document.getElementById('reviews-container');
+        //         for (const review of reviews) {
+        //             const reviewElem = document.createElement('div');
+        //             reviewElem.classList.add('review');
+
+        //             const ratingElem = document.createElement('span');
+        //             ratingElem.classList.add('review-rating');
+        //             ratingElem.innerHTML = `${review.rating} &#9733;`;
+        //             reviewElem.appendChild(ratingElem);
+
+        //             const nameElem = document.createElement('span');
+        //             nameElem.classList.add('reviewer-name');
+        //             nameElem.textContent = review.author_name;
+        //             reviewElem.appendChild(nameElem);
+
+        //             const dateElem = document.createElement('span');
+        //             dateElem.classList.add('review-date');
+        //             const date = new Date(review.time * 1000);
+        //             dateElem.textContent = date.toLocaleDateString();
+        //             reviewElem.appendChild(dateElem);
+
+        //             const textElem = document.createElement('div');
+        //             textElem.classList.add('review-text');
+        //             textElem.textContent = review.text;
+        //             reviewElem.appendChild(textElem);
+
+        //             reviewsContainer.appendChild(reviewElem);
+        //         }
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // }
+
+        // fetchReviews();
+
+    </script> -->
+</body>
+
+</html>
